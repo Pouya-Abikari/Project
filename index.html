@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <title>Match Me</title>
+    <link  rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="topnav">
+    <a class="index.html" href="/">Home</a>
+    <a href="contact.html">Contact</a>
+    <a href="about.html">About</a>
+    <button onclick="document.getElementById('id01').style.display='block'" style="right:20%;">Login</button>
+</div>
+<div id="id01" class="modal">
+
+  <form class="modal-content animate" action="/login" method="POST">
+    <div class="imgcontainer">
+      <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+      <img src="" alt="Avatar" class="avatar">
+    </div>
+
+    <div class="container">
+      <label for="un"><b>Username</b></label>
+      <input type="text" placeholder="Enter Username" name="un" required>
+
+      <label for="pw"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" name="pw" id="pw" required>
+      <label>Show password</label><input type="checkbox" onclick="myFunction()"><br><br>
+
+      <button type="submit">Login</button>
+    </div>
+
+    <div class="container" style="background-color:#f1f1f1">
+      <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button>
+      <span class="psw"><a href="#">Forgot password?</a></span>
+      <a href="form" style="align:center;">Create account</a>
+    </div>
+  </form>
+</div>
+
+<script>
+var modal = document.getElementById('id01');
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
+
+function myFunction() {
+  var x = document.getElementById("pw");
+  if (x.type === "password") {
+    x.type = "text";
+  } else {
+    x.type = "password";
+  }
+}
+</script>
+<div class="main-pic">
+  <div class="main-pic-text">
+    <h1 style="font-size:85px">MATCH ME</h1>
+  </div>
+</div>
+</body>
+<body>
+<div class="frgb">
+  <h5>Match Me is an online website designed to find people like you.<br><br>
+    Match Me helps you find friends that have the same interests and hobbies as you.<br><br>
+    Match Me will helps you find your next best friend as easy as clicking a button!</h5>
+</div>
+</body>
+</html>

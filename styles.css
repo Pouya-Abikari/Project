@@ -1,0 +1,184 @@
+body {
+  margin:0;
+  background: url("image.jpg") no-repeat center;
+  background-size: cover;
+  height: 1200px;
+  position: relative;
+}
+
+h1 {
+  color:black;
+}
+.h1 {color:white;
+    font-size:90px;
+    font-family:sans-serif;
+    text-align:center;
+}
+
+a {color:black;
+}
+
+p { color:black;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color:white;
+}
+
+.topnav a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  font-family:Arial;
+}
+
+.topnav a:hover {
+  background-color:gray;
+  color:white;
+}
+
+.topnav active {
+  background-color: white;
+  color: white;
+}
+
+.table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  text-align:center;
+}
+
+
+.tr:nth-child(even) {
+  background-color:black;
+}
+
+table center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+.form {border: 3px solid #f1f1f1;}
+
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.button {
+  background-color: #04AA6D;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.button:hover {
+  opacity: 0.8;
+}
+
+.cancelbtn {
+  width: auto;
+  padding: 10px 18px;
+  background-color: #f44336;
+}
+
+.imgcontainer {
+  text-align: center;
+  margin: 24px 0 12px 0;
+}
+
+img.avatar {
+  width: 40%;
+  border-radius: 50%;
+}
+
+.container {
+  padding: 16px;
+}
+
+.span.psw {
+  float: right;
+  padding-top: 16px;
+}
+
+@media screen and (max-width: 300px) {
+  span.psw {
+     display: block;
+     float: none;
+  }
+  .cancelbtn {
+     width: 100%;
+  }
+}
+
+.signupform{
+  font-family:Arial;
+}
+
+.signupform {
+  border-radius: 25px;
+  position: relative;
+  left: 20px;
+  margin: 30px;
+  max-width: 450px;
+  max-height: 1200px;
+  padding: 15px;
+  background-color: white;
+}
+
+#fname{
+  width:250px;
+  height:15px;
+}
+
+#sname{
+  width:250px;
+  height:15px;
+}
+
+#un{
+  width:250px;
+  height:15px;
+}
+
+#pw{
+  width:250px;
+  height:15px;
+}
+
+#email{
+  width:250px;
+  height:15px;
+  border-style: ridge;
+  border-color: #fdfdfd;
+}
+
+#phone{
+  border-style: ridge;
+  border-color: #fdfdfd;
+}
+
+#bio{
+  border-style: ridge;
+  border-color: #fdfdfd;
+}
+
+.submit {
+  float:right;
+}

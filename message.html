@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+      <title>Match Me</title>
+      <link  rel="stylesheet" href="/static/messaging.css">
+  </head>
+  <body>
+  <div class="topnav">
+      <a class="index.html" href="/">Home</a>
+      <a href="contact.html">Contact</a>
+      <a href="about.html">About</a>
+  </div>
+<body>
+<form action="/insert" method="POST">
+   <label>Ender Reciever:</label>
+   <input type="text" id="receiver" name="receiver" value="" required><br>
+   <label>Enter your message:</label>
+   <input type="text" id="message" name="message" value="" required><br>
+   <input type="submit"></input>
+</form>
+</body>
+</html>
