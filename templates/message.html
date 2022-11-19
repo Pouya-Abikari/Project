@@ -7,17 +7,85 @@
   </head>
   <body>
   <div class="topnav">
-      <a class="index.html" href="/">Home</a>
-      <a href="contact.html">Contact</a>
-      <a href="about.html">About</a>
+      <a id="click" class="index.html" href="/">Home</a>
+      <a id="click" href="contact.html">Contact</a>
+      <a id="click" href="about.html">About</a>
+      <label id="time"></label>
+      <script>
+         setInterval(()=>{
+           const time = document.querySelector("#time");
+           let date = new Date();
+           let hours = date.getHours();
+           let minutes = date.getMinutes();
+           let seconds = date.getSeconds();
+           let day_night = "AM";
+           if(hours > 12){
+             day_night = "PM";
+             hours = hours - 12;
+           }
+           if(seconds < 10){
+             seconds = "0" + seconds;
+           }
+           if(minutes < 10){
+             minutes = "0" + minutes;
+           }
+           if(hours < 10){
+             hours = "0" + hours;
+           }
+           time.textContent = hours + ":" + minutes + ":" + seconds + " "+ day_night;
+         });
+      </script>
   </div>
-<body>
-<form action="/insert" method="POST">
-   <label>Ender Reciever:</label>
-   <input type="text" id="receiver" name="receiver" value="" required><br>
-   <label>Enter your message:</label>
-   <input type="text" id="message" name="message" value="" required><br>
-   <input type="submit"></input>
-</form>
-</body>
+  <div class="sidebar">
+    <a href="/account">Account</a>
+    <a href="/message" style="color:red;">Messaging app</a>
+    <a href="friends"><img href="/static/people.png">Friends</a>
+    <a>Personality test</a>
+    <a href="/settings">Settings</a>
+  </div>
+  <div id="formcontact">
+  <form class="example" action="/contacts" method="post">
+    <input type="text" placeholder="Search contacts" name="user" id="contactsearch">
+    <button type="submit" id="contactsearch"></button>
+  </form>
+  </div>
+  <body onload="getMsgs('{{ chat }}')">
+  <div id="select">
+   <form action="/send" method="post">
+     <select name="receiver" id="contact" onchange="getMsgs(this.value)">
+         <option value="none">Choose Contact</option>
+         {% for i in contacts %}
+         <option
+         {% if i == chat %}
+            selected="selected"
+         {% endif %}
+            value={{ i }}>{{ i }}</option>
+         {% endfor %}
+     </select><p>
+     Message: <input type="text" name="msg"> <br>
+     <input type="submit">
+   </form>
+  </div>
+   <div id="msgs">
+   </div>
+
+   <script>
+   function getMsgs(name) {
+     var xhttp = new XMLHttpRequest()
+     xhttp.open("GET", "/getMsgs?name="+name, true)
+     xhttp.send()
+
+     xhttp.onreadystatechange = function() {
+         if (this.readyState == 4 && this.status == 200) {
+             const msgs = JSON.parse(this.responseText);
+             let output = "";
+             for (let i = 0; i < msgs.length; i++) {
+                 output += msgs[i][0] + " : " + msgs[i][1] + "<br>";
+             }
+         document.getElementById("msgs").innerHTML = output
+         }
+     }
+   }
+   </script>
+   </body>
 </html>
