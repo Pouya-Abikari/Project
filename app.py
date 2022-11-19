@@ -10,25 +10,63 @@ app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(minutes=1)
 
 @app.route('/')
 def home():
-	return render_template('index.html')
+    if 'username' in session:
+        session.permanent = True
+        return render_template('indexlog.html')
+    return render_template('index.html')
 
 @app.route('/form')
 def form():
-	return render_template('signup.html')
+    return render_template('signup.html')
 
-@app.route('/message')
-def test():
-	return render_template('message.html')
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/compare')
+def compare():
+    return render_template('form.html')
+
+@app.route('/account')
+def account():
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    cur.execute("SELECT username FROM USER")
+    result = [item[0] for item in cur.fetchall()]
+    userName = escape(session['username'])
+    return render_template('account.html', userName=userName, search=result)
 
 @app.route('/signup',methods=['POST'])
 def signup():
     con = sqlite3.connect('login.db')
     cur = con.cursor()
-    cur.execute("INSERT INTO USER(fname,sname,username,password,email,gender,age,hobby1,hobby2,hobby3,phone,colour1,colour2,course1,course2,course3,year,bio)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (request.form['fname'],request.form['sname'],request.form['un'],request.form['pw'],request.form['email'],request.form['gender'],request.form['age'],request.form['hobby1'],request.form['hobby2'],request.form['hobby3'],request.form['phone'],request.form['colour1'],request.form['colour2'],request.form['course1'],request.form['course2'],request.form['course3'],request.form['year'],request.form['bio']))
+    cur.execute("SELECT * FROM USER WHERE Username=?" ,[(request.form['un'])])
+    match = len(cur.fetchall())
+    con.close()
+    if match == 0:
+        con = sqlite3.connect('login.db')
+        cur = con.cursor()
+        cur.execute("INSERT INTO USER(fname,sname,username,password,email)VALUES (?,?,?,?,?)",
+                        (request.form['fname'],request.form['sname'],request.form['un'],request.form['pw'],request.form['email']))
+        con.commit()
+        con.close()
+        session.permanent = True
+        session['username'] = request.form['un']
+        session['chat'] = None
+        return redirect(url_for('account'))
+    else:
+        error='Username already exists, choose another username.'
+        return render_template('signup.html', error=error)
+
+@app.route('/signupform',methods=['POST'])
+def signupform():
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    cur.execute("INSERT INTO FORM(gender,age,hobby1,hobby2,hobby3,phone,colour1,colour2,course1,course2,course3,year,bio)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (request.form['gender'],request.form['age'],request.form['hobby1'],request.form['hobby2'],request.form['hobby3'],request.form['phone'],request.form['colour1'],request.form['colour2'],request.form['course1'],request.form['course2'],request.form['course3'],request.form['year'],request.form['bio']))
     con.commit()
     con.close()
-    return 'insert'
+    return render_template('')
 
 @app.route('/create')
 def create():
@@ -39,7 +77,15 @@ def create():
                     sname VARCHAR(20) NOT NULL,
                     username VARCHAR(20) NOT NULL PRIMARY KEY,
                     password VARCHAR(20) NOT NULL,
-                    email VARCHAR(25) NOT NULL,
+                    email VARCHAR(25) NOT NULL)
+                """)
+    return 'created'
+
+@app.route('/createform')
+def createform():
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    cur.execute("""CREATE TABLE FORM(
                     gender VARCHAR(10) NOT NULL,
                     age INT NOT NULL,
                     hobby1 VARCHAR(20) NOT NULL,
@@ -54,39 +100,49 @@ def create():
                     year INT NOT NULL,
                     bio VARCHAR(150) NOT NULL)
                 """)
-    return 'created'
+    return 'created form'
 
-@app.route('/msg')
-def msg():
+@app.route('/createmsg')
+def createmsg():
     con = sqlite3.connect('login.db')
     cur = con.cursor()
     cur.execute("""CREATE TABLE MSG(
-                    sec VARCHAR(2) NOT NULL,
-                    min VARCHAR(2) NOT NULL,
-                    hour VARCHAR(2) NOT NULL,
-                    day VARCHAR(2) NOT NULL,
-                    month VARCHAR(2) NOT NULL,
-                    year VARCHAR(4) NOT NULL,
                     sender VARCHAR(20) NOT NULL,
                     receiver VARCHAR(20) NOT NULL,
-                    message VARCHAR(200) NOT NULL)
+                    msg VARCHAR(250) NOT NULL)
                 """)
     return 'created msg table'
 
+@app.route("/createcontacts")
+def createcontacts():
+    con = sqlite3.connect("login.db")
+    cur = con.cursor()
+    try:
+        cur.execute(""" CREATE TABLE contacts(
+            user VARCHAR(20) NOT NULL,
+	        contact VARCHAR(20) NOT NULL)
+                    """)
+    except sqlite3.OperationalError as e:
+        return str(e)
+    return "table contacts created"
+
+
 @app.route('/select')
 def select():
-	con = sqlite3.connect('login.db')
-	cur = con.cursor()
-	cur.execute("SELECT * FROM USER")
-	rows = cur.fetchall()
-	return str(rows)
+    if 'username' in session:
+        session.permanent = True
+        request.form.get['un'] = escape(session['username'])
+        con = sqlite3.connect('login.db')
+        cur = con.cursor()
+        cur.execute("SELECT hobby1, hobby2, hobby3 FROM USER WHERE Username='un' ")
+        rows = cur.fetchall()
+        return str(rows)
 
-@app.route('/insert', methods=['POST'])
-def insert():
+@app.route('/msg', methods=['POST'])
+def msg():
     con = sqlite3.connect('login.db')
     cur = con.cursor()
-    cur.execute("INSERT INTO MSG(sec, min, hour, day, month, year, sender, receiver, message) VALUES (?,?,?,?,?,?,?,?,?)",
-                    (request.form['sec'],request.form['min'],request.form['hour'],request.form['day'],request.form['month'],request.form['year'],request.form['sender'],request.form['receiver'],request.form['message']))
+    cur.execute("INSERT INTO MSG(sender, receiver, message) VALUES (?,?,?)",(session['username'], request.form['receiver'], request.form['message']))
     con.commit()
     con.close()
     return 'inserted into MSG'
@@ -99,33 +155,97 @@ def login():
     (request.form['un'],request.form['pw']))
     match = len(cur.fetchall())
     if match == 0:
-        return "Wrong username and password"
+        error='Wrong username and password, try again.'
+        return render_template('index.html', error=error)
     else:
         session.permanent = True
-        session['username'] = request.form['uname']
-        return "Welcome " + request.form['uname']
+        session['username'] = request.form['un']
+        session['chat'] = None
+        return redirect(url_for('account'))
 
 @app.route('/un')
 def un():
-	if 'username' in session:
-		return 'Logged in as %s' % escape(session['username'])
-	return 'You are not logged in'
+    if 'username' in session:
+        return 'Logged in as %s' % escape(session['username'])
+    return 'You are not logged in'
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     return redirect(url_for('un'))
 
-#@app.route("/app")
-#def app():
-    msg = request.args.get('msg','')
-    if msg == '':
-        f = open("file.txt", "r")
-        return "<form>Message <input name='msg'></form>" + f.read()
+@app.route('/contacts', methods=['GET', 'POST'])
+def contacts():
+    if request.method == 'GET':
+        return render_template('contact.html')
     else:
-        f = open("file.txt", "a")
-        f.write(msg + '<br>')
-        f.close()
-        f = open("file.txt", "r")
-        return "<form>Message <input name='msg'></form>" + f.read()
+        con = sqlite3.connect('login.db')
+        cur = con.cursor()
+        cur.execute("SELECT * FROM USER WHERE username=?",
+            (request.form['user'],))
+        result = cur.fetchall()
+        con.close()
+        if len(result) == 0:
+            return 'username not recognised'
+        else:
+            con = sqlite3.connect('login.db')
+            cur = con.cursor()
+            cur.execute("SELECT * FROM contacts WHERE user=? and contact=?",
+                (session['username'],request.form['user']))
+            result = cur.fetchall()
+            if len(result) == 0:
+                cur.execute("INSERT INTO contacts (user, contact) VALUES (?,?)",
+                    (session['username'],request.form['user']))
+                con.commit()
+                return 'contact added'
+            else:
+                return 'contact exists'
 
+@app.route('/message')
+def message():
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    cur.execute("SELECT contact FROM contacts WHERE user=?", (session['username'],))
+    result = [item[0] for item in cur.fetchall()]
+    return render_template('message.html', chat=session['chat'], contacts=result)
+
+@app.route('/send', methods=['POST'])
+def send():
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    cur.execute("INSERT INTO MSG (sender, receiver, msg) VALUES (?,?,?)",
+    	       		(session['username'],request.form['receiver'],request.form['msg']))
+    con.commit()
+    return redirect(url_for('message'))
+
+@app.route('/getMsgs', methods=['GET'])
+def getMsgs():
+    session['chat'] = request.args.get("name")
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    usr = session['username']
+    chat = session['chat']
+    cur.execute("""SELECT sender, msg FROM MSG WHERE (receiver=? AND sender=?) OR (receiver=? AND sender=?)""", (usr,chat,chat,usr))
+    rows = cur.fetchall()
+    return rows
+
+@app.route('/createforgot')
+def createforgot():
+    con = sqlite3.connect("forgot.db")
+    cur = con.cursor()
+    try:
+        cur.execute(""" CREATE TABLE verify(
+            verify CHAR(5) NOT NULL)
+                    """)
+    except sqlite3.OperationalError as e:
+        return str(e)
+    return "table verify created"
+
+@app.route('/forgot', methods=['POST'])
+def forgot():
+    verify = (random.randrange(1, 10))
+    con = sqlite3.connect('forgot.db')
+    cur = con.cursor()
+    cur.execute("INSERT INTO USER (verify) VALUES (?)", (verify))
+    con.commit()
+    return render_template('forgot.html')
