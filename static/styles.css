@@ -1,14 +1,17 @@
+* {
+  font-family:sans-serif;
+}
+
 body {
   margin:0;
-  background: url("image.jpg") no-repeat center;
-  background-size: cover;
-  height: 1200px;
-  position: relative;
+  background-color: #E1E1E1
 }
 
 h1 {
   color:black;
+  margin-left:18px;
 }
+
 .h1 {color:white;
     font-size:90px;
     font-family:sans-serif;
@@ -16,20 +19,39 @@ h1 {
 }
 
 a {color:black;
+  font-size:20px;
+  text-align:center;
 }
 
-p { color:black;
+#a {
+  font-size:17px;
+}
+
+#p {
+  color:black;
+  margin-left:20px;
+}
+
+#click {
+  color:black;
+  font-size:17px;
+  text-align: center;
+  padding: 16px 16px;
+  outline: none;
+  border: none;
+  cursor: pointer;
 }
 
 .topnav {
   overflow: hidden;
-  background-color:white;
+  background-color:#E1E1E1;
 }
 
 .topnav a {
   float: left;
   color: black;
   text-align: center;
+  margin-top: 0px;
   padding: 14px 16px;
   text-decoration: none;
   font-size: 17px;
@@ -42,8 +64,8 @@ p { color:black;
 }
 
 .topnav active {
-  background-color: white;
-  color: white;
+  background-color: #E1E1E1;
+  color: #E1E1E1;
 }
 
 .table {
@@ -134,7 +156,7 @@ img.avatar {
 .signupform {
   border-radius: 25px;
   position: relative;
-  left: 20px;
+  left: 5px;
   margin: 30px;
   max-width: 450px;
   max-height: 1200px;
@@ -145,28 +167,34 @@ img.avatar {
 #fname{
   width:250px;
   height:15px;
+  border:none;
 }
 
 #sname{
   width:250px;
   height:15px;
+  border:none;
 }
 
 #un{
   width:250px;
   height:15px;
+  border:none;
 }
 
 #pw{
   width:250px;
   height:15px;
+  border:none;
 }
 
 #email{
-  width:250px;
-  height:15px;
+  width:242px;
+  height:21px;
+  margin-top:7px;
+  margin-bottom:7px;
   border-style: ridge;
-  border-color: #fdfdfd;
+  border:none;
 }
 
 #phone{
@@ -181,4 +209,69 @@ img.avatar {
 
 .submit {
   float:right;
+}
+
+#time{
+  color: black;
+  font-size:20px;
+  letter-spacing: 1px;
+  float: right;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  outline: none;
+  text-transform: uppercase;
+  background-size: 400%;
+}
+@keyframes animate {
+  100%{
+    filter: hue-rotate(360deg);
+  }
+}
+
+.wrapper span{
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+  background: inherit;
+}
+.wrapper span:first-child{
+  filter: blur(7px);
+}
+.wrapper span:last-child{
+  filter: blur(20px);
+}
+
+#image {
+  background: url("image.jpg") no-repeat center;
+  font-family:sans-serif;
+  background-size: cover;
+  top:75px;
+  left:50px;
+  right:50px;
+  position: absolute;
+  z-index:-1;
+}
+
+.alert {
+  padding: 20px;
+  background-color: #f44336;
+  color: white;
+  opacity: 1;
+  transition: opacity 0.6s;
+}
+
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closebtn:hover {
+  color: black;
 }
