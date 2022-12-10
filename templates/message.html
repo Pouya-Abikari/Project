@@ -5,7 +5,7 @@
       <title>Match Me</title>
       <link  rel="stylesheet" href="/static/messaging.css">
   </head>
-  <body>
+  <body onload="getMsgs('{{ chat }}')">
   <div class="topnav">
       <a id="click" class="index.html" href="/">Home</a>
       <a id="click" href="contact.html">Contact</a>
@@ -42,6 +42,7 @@
     <a href="friends"><img href="/static/people.png">Friends</a>
     <a>Personality test</a>
     <a href="/settings">Settings</a>
+    <a id="click1" href="/logout">Log out</a>
   </div>
   <div id="formcontact">
   <form class="example" action="/contacts" method="post">
@@ -49,11 +50,10 @@
     <button type="submit" id="contactsearch"></button>
   </form>
   </div>
-  <body onload="getMsgs('{{ chat }}')">
+
   <div id="select">
    <form action="/send" method="post">
-     <select name="receiver" id="contact" onchange="getMsgs(this.value)">
-         <option value="none">Choose Contact</option>
+     <select name="receiver" id="contact" onchange="getMsgs(this.value)" class="contact" multiple="multiple">
          {% for i in contacts %}
          <option
          {% if i == chat %}
@@ -61,13 +61,11 @@
          {% endif %}
             value={{ i }}>{{ i }}</option>
          {% endfor %}
-     </select><p>
-     Message: <input type="text" name="msg"> <br>
-     <input type="submit">
+     </select>
+     <input type="text" name="msg" id="messagebox" placeholder="Type your message:"> <input type="submit" id="messagesubmit">
    </form>
   </div>
-   <div id="msgs">
-   </div>
+  <div id="msgs"></div>
 
    <script>
    function getMsgs(name) {
@@ -76,16 +74,42 @@
      xhttp.send()
 
      xhttp.onreadystatechange = function() {
-         if (this.readyState == 4 && this.status == 200) {
-             const msgs = JSON.parse(this.responseText);
-             let output = "";
-             for (let i = 0; i < msgs.length; i++) {
-                 output += msgs[i][0] + " : " + msgs[i][1] + "<br>";
-             }
-         document.getElementById("msgs").innerHTML = output
-         }
-     }
-   }
+      if (this.readyState == 4 && this.status == 200) {
+          const msgs = JSON.parse(this.responseText);
+          let output = "";
+          for (let i = 0; i < msgs.length; i++) {
+            if (msgs[i][0] == name){
+              output += "<label>" + msgs[i][1] + "</label>" + "<br><p></p>";
+            } else {
+              output += "<span>" + msgs[i][1] + "</span>" + "<br><p></p>";
+            }
+        }
+      document.getElementById("msgs").innerHTML = output
+      }
+  }
+}
+   </script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+   <script>
+     var socket = io();
+     var messages = document.getElementById('messages');
+     var form = document.getElementById('form');
+     var input = document.getElementById('input');
+
+     form.addEventListener('submit', function(e) {
+       e.preventDefault();
+       if (input.value) {
+         let data = {room:room.value, msg:input.value};
+         socket.emit('join', data);
+         input.value = '';
+       }
+     });
+
+     socket.on('chat message', function(msg) {
+       var item = document.createElement('p');
+       item.textContent = msg;
+       messages.appendChild(item);
+     });
    </script>
    </body>
 </html>
