@@ -5,8 +5,8 @@
 
 body {
     margin:0;
+    width:55%;
     background-size: cover;
-    height: 1200px;
     position: relative;
   }
 
@@ -38,13 +38,9 @@ body {
   }
 
   #click1 {
-    color: red;
-    font-size:17px;
-    text-align: center;
-    padding: 16px 16px;
-    outline: none;
-    border: none;
-    cursor: pointer;
+    position:fixed;
+    float:bottom;
+    bottom:15px;
   }
 
   .topnav {
@@ -219,7 +215,7 @@ body {
 
   .sidebar {
     height: 100%;
-    width: 14%;
+    width: 170px;
     position: fixed;
     z-index: 1;
     top: 52px;
@@ -230,8 +226,8 @@ body {
   }
 
   .sidebar a {
-    text-align: center;
-    font-family:sans-serif:
+    text-align: left;
+    font-family:sans-serif;
     padding: 6px 8px 6px 16px;
     text-decoration: none;
     margin-bottom:10px;
@@ -250,10 +246,10 @@ body {
   }
 
   #formcontact {
-    position:relative;
-    max-width:300px;
-    left:15%;
-    top:8%;
+    position:fixed;
+    width:400px;
+    left:170px;
+    top:52px;
     height:40px;
   }
 
@@ -265,16 +261,88 @@ body {
 
   #select {
     position:relative;
-    height:150px;
-    width:450px;
-    top:10%;
-    left:15%;
+    width:100;
+    top:52px;
+    left:570px;
   }
 
   #msgs {
+    background-color:lightgray;
+    margin:10px;
+    bottom:0;
     position:relative;
-    height:400px;
-    width:500px;
-    left:15%;
-    top:10%;
+    left:560px;
+    right:10px;
+    margin-left:30px;
+    width:100%;
+    height:500px;
+    top:2px;
+    border-radius:20px;
+    padding:20px;
+    overflow: auto;
+    scroll-padding-bottom: 50em;
   }
+
+  .contact {
+    width:400px;
+    position:fixed;
+    left:170px;
+    top:93px;
+    height:100%;
+    display: block;
+    resize: none;
+    overflow: auto;
+    float:left;
+  }
+
+.contact option {
+  position:relative;
+  border: solid black;
+  display: block;
+  padding: 7px 10px;
+  max-width: 400px;
+  text-align: left;
+  height:50px;
+  font-size:25px;
+}
+
+#messagebox {
+  margin:10px;
+  bottom:0;
+  position:relative;
+  left:20px;
+  right:0;
+  max-width:84%;
+  top:552px;
+  border-radius:10px;
+}
+
+#messagesubmit {
+  margin:10px;
+  position:relative;
+  top:552px;
+  left:0;
+  width:80px;
+  height:40px;
+  border-radius:10px;
+}
+
+#msgs span {
+  background-color:lightblue;
+  position:absolute;
+  max-width:70%;
+  right:20px;
+  float:right;
+  margin:15px auto;
+  padding:5px;
+  display:block;
+}
+
+#msgs label {
+  background-color:red;
+  position:absolute;
+  margin:15px auto;
+  max-width:70%;
+  display:block;
+  padding:5px;
+}
