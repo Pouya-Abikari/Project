@@ -1,18 +1,25 @@
 from flask import Flask, render_template, session, redirect, url_for, request
+from flask_socketio import SocketIO, join_room, emit
 import sqlite3
 import os
 from markupsafe import escape
 from datetime import timedelta
+import random
 
 app = Flask(__name__)
+socketio = SocketIO(app)
+
 app.config['SECRET_KEY'] = os.urandom(16)
-app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(minutes=1)
+app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(minutes=5)
+
+app.config["SESSION_TYPE"] = "filesystem"
 
 @app.route('/')
 def home():
     if 'username' in session:
         session.permanent = True
-        return render_template('indexlog.html')
+        yes="yes"
+        return render_template('index.html', state=yes)
     return render_template('index.html')
 
 @app.route('/form')
@@ -119,8 +126,8 @@ def createcontacts():
     cur = con.cursor()
     try:
         cur.execute(""" CREATE TABLE contacts(
-            user VARCHAR(20) NOT NULL,
-	        contact VARCHAR(20) NOT NULL)
+                        user VARCHAR(20) NOT NULL,
+	                    contact VARCHAR(20) NOT NULL)
                     """)
     except sqlite3.OperationalError as e:
         return str(e)
@@ -172,7 +179,8 @@ def un():
 @app.route('/logout')
 def logout():
     session.pop('username', None)
-    return redirect(url_for('un'))
+    logout="User logged out successfully!"
+    return render_template('index.html', logout=logout)
 
 @app.route('/contacts', methods=['GET', 'POST'])
 def contacts():
@@ -249,3 +257,9 @@ def forgot():
     cur.execute("INSERT INTO USER (verify) VALUES (?)", (verify))
     con.commit()
     return render_template('forgot.html')
+
+@socketio.on('join')
+def on_join(data):
+    join_room(data['room'])
+    emit('chat message', data['msg'], to=data['room'])
+
