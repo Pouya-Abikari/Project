@@ -11,88 +11,105 @@ socketio = SocketIO(app)
 
 app.config['SECRET_KEY'] = os.urandom(16)
 app.config['PERMANENT_SESSION_LIFETIME'] =  timedelta(minutes=5)
-
 app.config["SESSION_TYPE"] = "filesystem"
 
 @app.route('/')
-def home():
-    if 'username' in session:
-        session.permanent = True
-        yes="yes"
-        return render_template('index.html', state=yes)
-    return render_template('index.html')
+def home():     #a function that handles the root URL '/'
+    if 'username' in session:       #checks if a session variable called 'username' exists
+        session.permanent = True    #sets the session to be permanent
+        yes="yes"                   #creates a variable called yes with the value "yes" which then affetcs the website UI
+        return render_template('index.html', state=yes)     #returns the index.html template with the variable state set to the value of yes
+    return render_template('index.html')        #returns the index.html template if the user is not logged in
 
 @app.route('/form')
-def form():
+def form():     #a function that handles the '/form' route and returns the 'signup.html' template
     return render_template('signup.html')
 
 @app.route('/about')
-def about():
+def about():        #a function that handles the '/about' route and returns the 'about.html' template
     return render_template('about.html')
 
 @app.route('/compare')
-def compare():
+def compare():      #a function that handles the '/compare' route and returns the 'form.html' template
     return render_template('form.html')
 
 @app.route('/account')
-def account():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
-    cur.execute("SELECT username FROM USER")
-    result = [item[0] for item in cur.fetchall()]
-    userName = escape(session['username'])
+def account():      #a function that handles the '/account' route
+    con = sqlite3.connect('login.db')               #connects to the SQLite database named 'login.db'
+    cur = con.cursor()                              #creates a cursor to perform SQL commands on the database
+    cur.execute("SELECT username FROM USER")        #is a SQL command that selects all the usernames from the 'USER' table in the database
+    result = [item[0] for item in cur.fetchall()]   #retrieves all the results and store them in the list 'result'
+    userName = escape(session['username'])          #retrieves the current user's username from the session and escapes any special characters
     return render_template('account.html', userName=userName, search=result)
+    #returns the 'account.html' template, passing the current user's username and the list of usernames to the template for use in the page
+
+@app.route('/Users', methods=['GET'])
+def Users():        #a function that handles the '/Users' route
+    name = request.args.get('name')     #gets the value of the 'name' argument from the GET request's query string
+    con = sqlite3.connect('login.db')   #creates a connection to the SQLite database named 'login.db'
+    cur = con.cursor()                  #creates a cursor object that can execute SQL commands on the connected database
+    cur.execute("SELECT * FROM USER WHERE Username=?" ,[name])
+    #executes a SQL SELECT statement that retrieves all rows from the 'USER' table where the 'Username' column matches the value of the 'name' variable.
+    match = cur.fetchall()      #fetches all the rows returned by the SQL query and assigns them to the variable 'match'
+    return render_template('users.html',i=match)
+    #calls the Flask's render_template method which renders the 'users.html' template and returns it to the client, passing the variable 'match' as 'i' to the template.
+
 
 @app.route('/signup',methods=['POST'])
-def signup():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
+def signup():       #defines the function that will be executed when the above route is accessed
+    con = sqlite3.connect('login.db')       #creates a connection to a SQLite database named 'login.db'
+    cur = con.cursor()                      #creates a cursor object that can execute SQL commands on the connected database
     cur.execute("SELECT * FROM USER WHERE Username=?" ,[(request.form['un'])])
-    match = len(cur.fetchall())
-    con.close()
-    if match == 0:
+    #executes a SQL SELECT statement that retrieves all rows from the 'USER' table where the 'Username' column matches the value of the 'un' field from the form data sent in the POST request.
+    match = len(cur.fetchall())     #fetches all the rows returned by the SQL query and assigns the number of rows to the variable 'match'
+    con.close()     #close the connection to the database
+    if match == 0:      #check if the number of matching rows is equal to 0, then proceed to insert the new user data into the 'USER' table
         con = sqlite3.connect('login.db')
         cur = con.cursor()
         cur.execute("INSERT INTO USER(fname,sname,username,password,email)VALUES (?,?,?,?,?)",
                         (request.form['fname'],request.form['sname'],request.form['un'],request.form['pw'],request.form['email']))
+        #execute a SQL INSERT statement that inserts the values of the 'fname', 'sname', 'un', 'pw', and 'email' fields from the form data sent in the POST request into the 'USER' table
         con.commit()
         con.close()
-        session.permanent = True
-        session['username'] = request.form['un']
-        session['chat'] = None
-        return redirect(url_for('account'))
+        session.permanent = True    #sets the session to be permanent
+        session['username'] = request.form['un']    #stores the 'un' field from the form data sent in the POST request as the 'username' in the session
+        session['chat'] = None      #initializes the 'chat' session variable to None
+        return redirect(url_for('account'))     #redirect the client to the 'account' route
     else:
         error='Username already exists, choose another username.'
-        return render_template('signup.html', error=error)
+        return render_template('signup.html', error=error)  #If the number of matching rows is not equal to 0, then proceed to render the 'signup.html' template
+                                                            #and passing the 'error' variable with the value of 'Username already exists, choose another username.' as a parameter
 
 @app.route('/signupform',methods=['POST'])
-def signupform():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
+def signupform():       #a function that will be executed when this route is accessed
+    con = sqlite3.connect('login.db')       #line creates a connection to a SQLite database named 'login.db'
+    cur = con.cursor()                      #creates a cursor object that is used to execute SQL commands on the database connection
     cur.execute("INSERT INTO FORM(gender,age,hobby1,hobby2,hobby3,phone,colour1,colour2,course1,course2,course3,year,bio)VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (request.form['gender'],request.form['age'],request.form['hobby1'],request.form['hobby2'],request.form['hobby3'],request.form['phone'],request.form['colour1'],request.form['colour2'],request.form['course1'],request.form['course2'],request.form['course3'],request.form['year'],request.form['bio']))
-    con.commit()
-    con.close()
-    return render_template('')
+                    #is an sql statement that insert form data in to the table 'FORM'
+    con.commit()    #saves the changes made to the database
+    con.close()     #closes the connection to the database
+    return render_template('')      #is returning a rendered template but it's not specified which template
 
 @app.route('/create')
-def create():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
+def create():       #a function that will be executed when this route is accessed
+    con = sqlite3.connect('login.db')       #line creates a connection to a SQLite database named 'login.db'
+    cur = con.cursor()                      #creates a cursor object that is used to execute SQL commands on the database connection
     cur.execute("""CREATE TABLE USER(
                     fname VARCHAR(15) NOT NULL,
                     sname VARCHAR(20) NOT NULL,
                     username VARCHAR(20) NOT NULL PRIMARY KEY,
                     password VARCHAR(20) NOT NULL,
                     email VARCHAR(25) NOT NULL)
-                """)
-    return 'created'
+                """)    #is an sql statement that creates a table in the database named 'USER' with five columns, with specific data types and constraints
+    return 'created'    #returns a string "created" as a response
 
 @app.route('/createform')
-def createform():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
+def createform():       #a function that will be executed when this route is accessed
+    con = sqlite3.connect('login.db')       #line creates a connection to a SQLite database named 'login.db'
+    cur = con.cursor()                      #creates a cursor object that is used to execute SQL commands on the database connection
     cur.execute("""CREATE TABLE FORM(
+                    username VARCHAR(20) NOT NULL PRIMARY KEY,
                     gender VARCHAR(10) NOT NULL,
                     age INT NOT NULL,
                     hobby1 VARCHAR(20) NOT NULL,
@@ -105,137 +122,147 @@ def createform():
                     course2 VARCHAR(20) NOT NULL,
                     course3 VARCHAR(20) NOT NULL,
                     year INT NOT NULL,
-                    bio VARCHAR(150) NOT NULL)
-                """)
-    return 'created form'
+                    bio VARCHAR(150) NOT NULL,
+                    check INT NOT NULL)
+                """)        #is an sql statement that creates a table in the database named 'FORM' with 14 columns, with specific data types and constraints
+    return 'created form'   #returns a string "created form" as a response
 
 @app.route('/createmsg')
-def createmsg():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
+def createmsg():        #a function that will be executed when this route is accessed
+    con = sqlite3.connect('login.db')       #line creates a connection to a SQLite database named 'login.db'
+    cur = con.cursor()                      #creates a cursor object that is used to execute SQL commands on the database connection
     cur.execute("""CREATE TABLE MSG(
                     sender VARCHAR(20) NOT NULL,
                     receiver VARCHAR(20) NOT NULL,
                     msg VARCHAR(250) NOT NULL)
-                """)
-    return 'created msg table'
+                """)    #is an sql statement that creates a table in the database named 'MSG' with three columns, with specific data types and constraints
+    return 'created msg table'  #returns a string "created msg table" as a response
 
 @app.route("/createcontacts")
-def createcontacts():
-    con = sqlite3.connect("login.db")
-    cur = con.cursor()
-    try:
+def createcontacts():       #a function that will be executed when this route is accessed
+    con = sqlite3.connect("login.db")       #line creates a connection to a SQLite database named 'login.db'
+    cur = con.cursor()                      #creates a cursor object that is used to execute SQL commands on the database connection
+    try:        #The try-except block is checking if there is an exception when trying to execute the
+                #SQL statement which creates a table 'contacts' with two columns user and contact with specific data types and constraints
         cur.execute(""" CREATE TABLE contacts(
                         user VARCHAR(20) NOT NULL,
 	                    contact VARCHAR(20) NOT NULL)
                     """)
-    except sqlite3.OperationalError as e:
+    except sqlite3.OperationalError as e:   #If there's an exception the code will return the error message as a string
         return str(e)
-    return "table contacts created"
+    return "table contacts created"     #if there's no error, it will return "table contacts created"
 
 
 @app.route('/select')
-def select():
-    if 'username' in session:
-        session.permanent = True
-        request.form.get['un'] = escape(session['username'])
-        con = sqlite3.connect('login.db')
+def select():       #a function that will be executed when this route is accessed
+    if 'username' in session:       #check if the session variable 'username' exists or not
+        session.permanent = True    #makes the session last until the user closes the browser
+        request.form.get['un'] = escape(session['username'])    #the variable 'un' is set equal to the escaped value of session variable 'username'
+        con = sqlite3.connect('login.db')   #line creates a connection to a SQLite database named 'login.db'
         cur = con.cursor()
-        cur.execute("SELECT hobby1, hobby2, hobby3 FROM USER WHERE Username='un' ")
-        rows = cur.fetchall()
-        return str(rows)
+        cur.execute("SELECT hobby1, hobby2, hobby3 FROM USER WHERE Username='un' ") #is an sql statement that selects hobby1, hobby2, hobby3 from table 'USER'
+                                                                                    #where the column 'Username' is equal to the variable 'un'
+        rows = cur.fetchall()   #fetches all the rows from the executed query and store them in the variable 'rows'
+        return str(rows)        #returns the rows as a string
 
 @app.route('/msg', methods=['POST'])
-def msg():
-    con = sqlite3.connect('login.db')
+def msg():      #a function that will be executed when this route is accessed
+    con = sqlite3.connect('login.db')   #line creates a connection to a SQLite database named 'login.db'
     cur = con.cursor()
     cur.execute("INSERT INTO MSG(sender, receiver, message) VALUES (?,?,?)",(session['username'], request.form['receiver'], request.form['message']))
-    con.commit()
-    con.close()
-    return 'inserted into MSG'
+                                    #is an sql statement that insert a new message into the table 'MSG' with three columns, sender, receiver and message
+                                    #The values for these columns are taken from the session variable 'username', the request form variable 'receiver' and
+                                    #the request form variable 'message' respectively
+    con.commit()    #saves the changes made to the database
+    con.close()     #closes the connection to the database
+    return 'inserted into MSG'      #returns a string "inserted into MSG" as a response
 
-@app.route('/login', methods=['POST'])
-def login():
-    con = sqlite3.connect('login.db')
+@app.route('/login', methods=['POST'])  #decorator is defining the route and specifying that it only accepts HTTP POST requests
+def login():        #line defines a function that will be executed when this route is accessed
+    con = sqlite3.connect('login.db')   #line creates a connection to a SQLite database named 'login.db'
     cur = con.cursor()
     cur.execute("SELECT * FROM USER WHERE Username=? AND Password=?",
-    (request.form['un'],request.form['pw']))
-    match = len(cur.fetchall())
-    if match == 0:
+    (request.form['un'],request.form['pw']))    #is an sql statement that selects all rows from the 'USER' table where the column 'Username' and
+                                                #'Password' match the request form variables 'un' and 'pw' respectively
+    match = len(cur.fetchall())     #fetches all the rows from the executed query, count the rows and store the count in the variable 'match'
+    if match == 0:      #check if match equals 0, if true it means no match found
         error='Wrong username and password, try again.'
-        return render_template('index.html', error=error)
+        return render_template('index.html', error=error)   #in this case, it renders the index.html template with an error message
     else:
         session.permanent = True
         session['username'] = request.form['un']
         session['chat'] = None
-        return redirect(url_for('account'))
+        return redirect(url_for('account'))     #in this case, the session is set as permanent, the session variable 'username' is
+                                                #set to the request form variable 'un' and session variable 'chat' is set to None, and the user is redirected to
+                                                #the 'account' page
 
 @app.route('/un')
-def un():
-    if 'username' in session:
-        return 'Logged in as %s' % escape(session['username'])
-    return 'You are not logged in'
+def un():   #a function that will be executed when this route is accessed
+    if 'username' in session:       #check if there is a username in the session
+        return 'Logged in as %s' % escape(session['username'])  #if the session variable 'username' exists it returns a string "Logged in as {username}"
+                                                                #where {username} is the escaped value of session variable 'username'
+    return 'You are not logged in'      #if the session variable 'username' does not exist, it returns a string "You are not logged in"
 
 @app.route('/logout')
-def logout():
-    session.pop('username', None)
-    logout="User logged out successfully!"
-    return render_template('index.html', logout=logout)
+def logout():   #line defines a function that will be executed when this route is accessed
+    session.pop('username', None)       #removes the 'username' key from the session, if it exists
+    logout="User logged out successfully!"      #creates a variable logout and assigns the value "User logged out successfully!" to it
+    return render_template('index.html', logout=logout)     #Renders the 'index.html' template and pass the logout variable to it
 
 @app.route('/contacts', methods=['GET', 'POST'])
-def contacts():
-    if request.method == 'GET':
+def contacts():     #line defines a function that will be executed when this route is accessed
+    if request.method == 'GET':     #check if the request method is GET, if true it renders the 'contact.html' template
         return render_template('contact.html')
-    else:
+    else:                           #if the request method is not GET, it's a POST request
         con = sqlite3.connect('login.db')
         cur = con.cursor()
         cur.execute("SELECT * FROM USER WHERE username=?",
-            (request.form['user'],))
-        result = cur.fetchall()
+            (request.form['user'],))    #is an sql statement that selects all rows from the 'USER' table where the column 'username' matches the request form variable 'user'
+        result = cur.fetchall()     #fetches all the rows from the executed query and store them in the variable 'result'
         con.close()
         if len(result) == 0:
-            return 'username not recognised'
-        else:
+            return 'username not recognised'    #check if the result length is 0, if true it means no match found and returns 'username not recognised'
+        else:       #if match found
             con = sqlite3.connect('login.db')
             cur = con.cursor()
             cur.execute("SELECT * FROM contacts WHERE user=? and contact=?",
-                (session['username'],request.form['user']))
-            result = cur.fetchall()
-            if len(result) == 0:
+                (session['username'],request.form['user']))     #is an sql statement that selects all rows from the 'contacts' table where the column 'user' matches the
+                                                                #username in session and column 'contact' matches with user
+            result = cur.fetchall()     #fetches all the rows from the table that match the query and assigns the result to the variable 'result'
+            if len(result) == 0:        #checks if the length of the result is equal to 0, if it is, it executes an SQL query to insert a new row into
+                                        #the 'contacts' table with the session's username and the user input as the values for the 'user' and 'contact' columns respectively
                 cur.execute("INSERT INTO contacts (user, contact) VALUES (?,?)",
                     (session['username'],request.form['user']))
                 con.commit()
-                return 'contact added'
+                return 'contact added'      #Then it commits the changes to the database and returns 'contact added'
             else:
-                return 'contact exists'
+                return 'contact exists'     #Otherwise, it returns 'contact exists'
 
 @app.route('/message')
 def message():
     con = sqlite3.connect('login.db')
     cur = con.cursor()
-    cur.execute("SELECT contact FROM contacts WHERE user=?", (session['username'],))
-    result = [item[0] for item in cur.fetchall()]
-    return render_template('message.html', chat=session['chat'], contacts=result)
+    cur.execute("SELECT contact FROM contacts WHERE user=?", (session['username'],))    #selects all rows from the 'contacts' table where the 'user' column matches the session's username
+    result = [item[0] for item in cur.fetchall()]   #fetches all the rows from the table that match the query and assigns it to the variable 'result'
+                                                    #Then it uses list comprehension to extract the first element of each tuple in the result which is the contact name
+    return render_template('message.html', chat=session['chat'], contacts=result)   #the result is then copied into contacts
 
 @app.route('/send', methods=['POST'])
 def send():
-    con = sqlite3.connect('login.db')
-    cur = con.cursor()
-    cur.execute("INSERT INTO MSG (sender, receiver, msg) VALUES (?,?,?)",
-    	       		(session['username'],request.form['receiver'],request.form['msg']))
-    con.commit()
     return redirect(url_for('message'))
 
 @app.route('/getMsgs', methods=['GET'])
 def getMsgs():
-    session['chat'] = request.args.get("name")
+    session['chat'] = request.args.get("name")  #This line sets a session variable 'chat' to the value of the 'name' query parameter of the GET request
     con = sqlite3.connect('login.db')
     cur = con.cursor()
-    usr = session['username']
+    usr = session['username']   #This line gets the value of the 'username' session variable
     chat = session['chat']
     cur.execute("""SELECT sender, msg FROM MSG WHERE (receiver=? AND sender=?) OR (receiver=? AND sender=?)""", (usr,chat,chat,usr))
-    rows = cur.fetchall()
-    return rows
+    #selects the sender and message from the MSG table where either the receiver is the value of the 'username' session variable and
+    #the sender is the value of the 'chat' session variable, or the receiver is the value of the 'chat' session variable and the sender is the value of the 'username' session variable
+    rows = cur.fetchall()   #This line retrieves all the rows returned by the previous SQL statement and stores them in a variable called 'rows'
+    return rows     #This line returns the rows as the response of the GET request
 
 @app.route('/createforgot')
 def createforgot():
@@ -260,6 +287,14 @@ def forgot():
 
 @socketio.on('join')
 def on_join(data):
-    join_room(data['room'])
-    emit('chat message', data['msg'], to=data['room'])
-
+    userName = escape(session['username'])  #This line gets the value of the 'username' session variable, and applies the escape function to it
+    receiver = data['room']     #This line gets the 'room' field of the data passed in the 'join' event
+    input = data['msg']     #This line gets the 'msg' field of the data passed in the 'join' event
+    con = sqlite3.connect('login.db')
+    cur = con.cursor()
+    cur.execute("INSERT INTO MSG (sender, receiver, msg) VALUES (?,?,?)",
+    	       		( userName ,receiver , input))      #This line executes an SQL statement that inserts the userName, receiver, and input as a new row in the MSG table
+    con.commit()
+    join_room(data['room'])     #This line join the room specified in the data passed in the 'join' event
+    emit('chat message', data['msg'], to=data['room'])      #This line emits a 'chat message' event to the room specified in the data passed
+                                                            #in the 'join' event, with the data['msg'] as the data of the event
