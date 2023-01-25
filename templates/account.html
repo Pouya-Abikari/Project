@@ -45,7 +45,7 @@
   {% if search | length != 0 %}
       <ul id="myUL">
         {% for i in search %}
-          <li><a>{{ i }}</a></li>
+          <li><a href="Users?name={{i}}">{{ i }}</a></li>
         {% endfor %}
       </ul>
   {% else %}
